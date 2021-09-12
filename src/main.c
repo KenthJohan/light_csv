@@ -9,39 +9,10 @@
 #include <iup.h>
 #include <iupcontrols.h>
 #include <iupcbs.h>
-#include "test_img.h"
+
 #include "csv.h"
 
-
-
-
-/*
-static void fill(Ihandle* mat)
-{
-	FILE * fp = fopen("../testiup/Utbildningar.Produktion2030.csv", "rb+");
-	int r = 1;
-	int c = 1;
-	char line_buffer[1024] = {0};
-	while(1)
-	{
-		int n = fread(line_buffer, 1024, 1, fp);
-		if(n <= 0){break;}
-		char * a = strstr(line_buffer, "\r\n");
-		if (a)
-		{
-			IupSetStrAttributeId2(mat, "", r, c, line_buffer);
-			a[0] = '\0';
-			fflush(stdout);
-			r++;
-		}
-		printf("%s",line_buffer);
-		memset(line_buffer, 0, 1024);
-		//replace(line_buffer, ';', 1024);
-	}
-	fclose(fp);
-}
-*/
-
+Ihandle * global_multitext = NULL;
 
 
 static void fill(Ihandle* mat)
@@ -74,32 +45,48 @@ static void fill(Ihandle* mat)
 	}
 }
 
+static int click(Ihandle *self, int lin, int col)
+{
+	char * s = IupGetAttributeId2(self, "", lin, col);
+	//printf("click_cb(%d, %d) %s\n", lin, col, s);
+	IupSetAttribute(global_multitext,"VALUE", s);  /* clear all marks */
+	//IupSetAttribute(self,"MARKED", NULL);  /* clear all marks */
+	//IupSetAttributeId2(self,"MARK", lin, 0, "1");
+	//IupSetfAttribute(self,"REDRAW", "L%d", lin);
+	return IUP_DEFAULT;
+}
 
 static Ihandle* create_matrix(void)
 {
 	Ihandle* mat = IupMatrix(NULL);
 	IupSetAttribute(mat, "NUMLIN", "100");
-	IupSetAttribute(mat, "NUMCOL", "30");
+	IupSetAttribute(mat, "NUMCOL", "10");
+	IupSetCallback(mat,"CLICK_CB",(Icallback)click);
 	fill(mat);
 	return mat;
 }
 
 void MatrixTest(void)
 {
-	Ihandle* dlg, *box, *mat, *multitext;
-	multitext = IupText(NULL);
-	IupSetAttribute(multitext, "MULTILINE", "YES");
-	IupSetAttribute(multitext, "EXPAND", "YES");
+	Ihandle* dlg, *box, *mat;
+	global_multitext = IupText(NULL);
+	IupSetAttribute(global_multitext, "MULTILINE", "YES");
+	IupSetAttribute(global_multitext, "EXPAND", "YES");
+	IupSetAttribute(global_multitext, "WORDWRAP", "YES");
+	//IupSetAttribute(mat, "SIZE", "200x");
 
 	mat = create_matrix();
-	box = IupVbox(mat, multitext, NULL);
+	box = IupVbox(mat, global_multitext, NULL);
 	IupSetAttribute(box, "MARGIN", "20x20");
 	dlg = IupDialog(box);
 	IupSetAttribute(dlg, "TITLE", "IupMatrix Simple Test");
 	IupShowXY(dlg, IUP_CENTER, IUP_CENTER);
 }
 
-#ifndef BIG_TEST
+
+
+
+
 int main(int argc, char* argv[])
 {
 	SetConsoleOutputCP(CP_UTF8);
@@ -114,4 +101,3 @@ int main(int argc, char* argv[])
 	IupClose();
 	return EXIT_SUCCESS;
 }
-#endif

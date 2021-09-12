@@ -2,7 +2,10 @@ TEMPLATE = app
 CONFIG += console
 CONFIG -= app_bundle
 CONFIG -= qt
-
+#https://stackoverflow.com/questions/3348711/add-a-define-to-qmake-with-a-value
+DEFINES += _WIN32_WINNT=_WIN32_WINNT_WIN10
+DEFINES += GIT_VERSION=$$system(git describe --always)
+DEFINES += BUILD_DATE='"$(shell date)"'
 
 QMAKE_CFLAGS += -Wno-unused-function
 QMAKE_CFLAGS += -Wno-missing-braces
