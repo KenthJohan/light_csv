@@ -13,7 +13,7 @@
 #include "csv.h"
 
 Ihandle * global_multitext = NULL;
-
+Ihandle* mat = NULL;
 
 static void fill(Ihandle* mat)
 {
@@ -49,7 +49,9 @@ static int click(Ihandle *self, int lin, int col)
 {
 	char * s = IupGetAttributeId2(self, "", lin, col);
 	//printf("click_cb(%d, %d) %s\n", lin, col, s);
-	IupSetAttribute(global_multitext,"VALUE", s);  /* clear all marks */
+	IupSetAttribute(global_multitext, "VALUE", s);  /* clear all marks */
+	IupSetInt(global_multitext, "r", lin);
+	IupSetInt(global_multitext, "column", col);
 	//IupSetAttribute(self,"MARKED", NULL);  /* clear all marks */
 	//IupSetAttributeId2(self,"MARK", lin, 0, "1");
 	//IupSetfAttribute(self,"REDRAW", "L%d", lin);
@@ -58,21 +60,34 @@ static int click(Ihandle *self, int lin, int col)
 
 static Ihandle* create_matrix(void)
 {
-	Ihandle* mat = IupMatrix(NULL);
+	mat = IupMatrix(NULL);
 	IupSetAttribute(mat, "NUMLIN", "100");
 	IupSetAttribute(mat, "NUMCOL", "10");
-	IupSetCallback(mat,"CLICK_CB",(Icallback)click);
+	IupSetCallback(mat,"ENTERITEM_CB",(Icallback)click);
 	fill(mat);
 	return mat;
 }
+
+static int action(Ihandle *self)
+{
+	int r = IupGetInt(self, "r");
+	int c = IupGetInt(self, "column");
+	char * s = IupGetAttribute(self, "VALUE");
+	printf("action %i %i %s\n", r, c, s);
+	IupSetStrAttributeId2(mat, "", r, c, s);
+	IupRedraw(mat, 0);
+}
+
 
 void MatrixTest(void)
 {
 	Ihandle* dlg, *box, *mat;
 	global_multitext = IupText(NULL);
+	IupSetAttribute(global_multitext, "READONLY", "NO");
 	IupSetAttribute(global_multitext, "MULTILINE", "YES");
 	IupSetAttribute(global_multitext, "EXPAND", "YES");
 	IupSetAttribute(global_multitext, "WORDWRAP", "YES");
+	IupSetCallback(global_multitext, "VALUECHANGED_CB", (Icallback) action);
 	//IupSetAttribute(mat, "SIZE", "200x");
 
 	mat = create_matrix();
