@@ -18,37 +18,48 @@ Ihandle* mat = NULL;
 static void fill(Ihandle* mat)
 {
 	struct CsvHandle_ handle = {0};
-	handle.delim = ';';
+	handle.delim = ',';
 	handle.quote = '"';
 	handle.escape = '\\';
-	CsvOpen(&handle, "../src/2030.csv");
-	int r = 1;
+	CsvOpen(&handle, "../src/Data8277.csv");
+	int r = -1;
+	int cmax = 0;
 	while (1)
 	{
-		int c = 2;
+		r++;
 		char * row = CsvReadNextRow(&handle);
 		if (row == NULL) {break;}
+		int c = 0;
 		while (1)
 		{
+			c++;
 			const char * col = CsvReadNextCol(row, &handle);
 			if (col == NULL) {break;}
 			IupSetStrAttributeId2(mat, "", r, c, col);
-			c++;
 		}
 		{
 			char buf[10];
 			snprintf (buf, 10, "%i", r);
-			IupSetStrAttributeId2(mat, "", r, 1, buf);
+			IupSetStrAttributeId2(mat, "", r, 0, buf);
 		}
-		printf("Row %i: Number of cols %i\n", r, c);
-		r++;
+		//printf("Row %i: Number of cols %i\n", r, c);
+		cmax = c > cmax ? c : cmax;
+		if(r == 100000)
+		{
+			printf("row %i\n", r);
+			break;
+		}
 	}
+	printf ("NUMLIN %i\n", r);
+	printf ("NUMLIN %i\n", cmax);
+	IupSetInt(mat, "NUMLIN", r);
+	IupSetInt(mat, "NUMCOL", cmax);
 }
 
 static int click(Ihandle *self, int lin, int col)
 {
 	char * s = IupGetAttributeId2(self, "", lin, col);
-	//printf("click_cb(%d, %d) %s\n", lin, col, s);
+	printf("click_cb(%d, %d) %s\n", lin, col, s);
 	IupSetAttribute(global_multitext, "VALUE", s);  /* clear all marks */
 	IupSetInt(global_multitext, "r", lin);
 	IupSetInt(global_multitext, "column", col);
@@ -61,8 +72,6 @@ static int click(Ihandle *self, int lin, int col)
 static Ihandle* create_matrix(void)
 {
 	mat = IupMatrix(NULL);
-	IupSetAttribute(mat, "NUMLIN", "100");
-	IupSetAttribute(mat, "NUMCOL", "10");
 	IupSetCallback(mat,"ENTERITEM_CB",(Icallback)click);
 	fill(mat);
 	return mat;
@@ -107,9 +116,9 @@ int main(int argc, char* argv[])
 	SetConsoleOutputCP(CP_UTF8);
 	//setlocale( LC_ALL, "en_US.UTF-8" );
 	IupOpen(&argc, &argv);
-	printf ("%s", IupGetGlobal("UTF8MODE"));
+	//printf ("%s", IupGetGlobal("UTF8MODE"));
 	IupSetGlobal("UTF8MODE", "YES");
-	printf ("%s", IupGetGlobal("UTF8MODE"));
+	//printf ("%s", IupGetGlobal("UTF8MODE"));
 	IupControlsOpen();
 	MatrixTest();
 	IupMainLoop();
